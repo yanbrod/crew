@@ -1,6 +1,8 @@
 import { Command } from "commander";
 import { join, dirname } from "node:path";
 import { mkdir, readFile } from "node:fs/promises";
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import chalk from "chalk";
 import { execa } from "execa";
 import yaml from "js-yaml";
@@ -14,6 +16,10 @@ import { statusCommand, printStatus } from "./commands/status.js";
 import { AppsCliError, ConfigError, GitError } from "./errors.js";
 import { findProjectRoot, appsDirFor } from "./fs/paths.js";
 import { acquireLock, releaseLock } from "./fs/lock.js";
+
+const pkg = JSON.parse(
+  readFileSync(join(dirname(fileURLToPath(import.meta.url)), "..", "package.json"), "utf8"),
+) as { version: string };
 
 function parseOnly(value: string | undefined): string[] | undefined {
   if (!value) return undefined;
@@ -74,7 +80,7 @@ async function main() {
   const program = new Command()
     .name("apps-cli")
     .description("Declarative multi-repo dev environment runner")
-    .version("0.0.0")
+    .version(pkg.version)
     .option("--config <path>", "explicit path to apps.yaml");
 
   program
@@ -151,6 +157,7 @@ async function main() {
     .action(async () => {
       const rootOpts = program.opts() as { config?: string };
       try {
+        await gitPreflight();
         const { projectRoot, config } = await getConfig(rootOpts);
         const rows = await statusCommand(projectRoot, config);
         printStatus(rows);
