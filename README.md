@@ -6,10 +6,6 @@
 
 > Run your whole polyrepo dev environment with one command. **Compose without containers.**
 
-- 📦 npm: [`@ianbrode/crew`](https://www.npmjs.com/package/@ianbrode/crew) — install with `npm install -D @ianbrode/crew`
-- 🔨 source: [github.com/yanbrod/crew](https://github.com/yanbrod/crew)
-- 🛠 binary: `crew` (call via `npx crew <cmd>` or an npm script)
-
 `crew` is a Node.js CLI that reads a `crew.yaml` at your project root, clones the listed git repositories into a local `apps/` folder, installs their dependencies, and runs them all in parallel with merged, prefixed logs. One file, one command, all your services up.
 
 If you've ever written a bash script to `git clone` three repos, `cd` into each, `npm install`, then open three terminal tabs to `npm run dev` — this replaces it.
@@ -168,6 +164,12 @@ npm run build       # bundles to dist/cli.js
 > The source repo is `yanbrod/crew` (my GitHub handle); the npm package is `@ianbrode/crew` (my npm handle). Same project, two different account names across the two services.
 
 The `docs/superpowers/specs/` and `docs/superpowers/plans/` folders contain the original design spec and implementation plan (historical — they reference the old working name `apps-cli`).
+
+## Links
+
+- 📦 npm: [`@ianbrode/crew`](https://www.npmjs.com/package/@ianbrode/crew)
+- 🔨 source: [github.com/yanbrod/crew](https://github.com/yanbrod/crew)
+- 🛠 binary name: `crew` (invoke via `npx crew <cmd>` or an npm script)
 
 ## License
 
