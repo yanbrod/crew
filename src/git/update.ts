@@ -1,20 +1,32 @@
+import { execa } from "execa";
 import { type ExecFn, defaultExec, inspect as defaultInspect, type GitState } from "./inspect.js";
 
 export type UpdateResult =
   | { action: "ff-pulled" }
   | { action: "up-to-date" }
-  | { action: "skipped"; reason: string };
+  | { action: "skipped"; reason: string }
+  | { action: "fetch-failed"; reason: string };
 
 export interface UpdateDeps {
   exec?: ExecFn;
   inspect?: (dir: string) => Promise<GitState>;
+  fetch?: (dir: string) => Promise<{ exitCode: number }>;
 }
+
+const defaultFetch = async (dir: string): Promise<{ exitCode: number }> => {
+  const r = await execa("git", ["fetch"], { cwd: dir, stdio: "inherit", reject: false });
+  return { exitCode: r.exitCode ?? 0 };
+};
 
 export async function update(dir: string, deps: UpdateDeps = {}): Promise<UpdateResult> {
   const exec = deps.exec ?? defaultExec;
   const inspect = deps.inspect ?? ((d: string) => defaultInspect(d, exec));
+  const fetch = deps.fetch ?? defaultFetch;
 
-  await exec("git", ["fetch"], { cwd: dir });
+  const fetchResult = await fetch(dir);
+  if (fetchResult.exitCode !== 0) {
+    return { action: "fetch-failed", reason: `git fetch exited with code ${fetchResult.exitCode}` };
+  }
 
   const state = await inspect(dir);
   if (!state.upstream) return { action: "skipped", reason: "no upstream" };

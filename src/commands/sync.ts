@@ -52,6 +52,7 @@ export async function syncCommand(
         const r = await update(appDir);
         if (r.action === "ff-pulled") process.stdout.write(chalk.cyan(`[${name}] fast-forwarded\n`));
         else if (r.action === "up-to-date") process.stdout.write(chalk.dim(`[${name}] up to date\n`));
+        else if (r.action === "fetch-failed") process.stdout.write(chalk.yellow(`[${name}] fetch failed: ${r.reason}\n`));
         else process.stdout.write(chalk.yellow(`[${name}] skipped: ${r.reason}\n`));
       }
 
