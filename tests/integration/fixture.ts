@@ -1,5 +1,5 @@
 import { execa } from "execa";
-import { mkdtemp, writeFile } from "node:fs/promises";
+import { mkdtemp, mkdir, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -24,7 +24,7 @@ export async function makeFixture(appName = "demo"): Promise<Fixture> {
   await execa("git", ["-C", seed, "remote", "add", "origin", bareRepo]);
   await execa("git", ["-C", seed, "push", "-u", "origin", "main"]);
 
-  await execa("mkdir", ["-p", projectRoot]);
+  await mkdir(projectRoot, { recursive: true });
   const yaml = `apps:\n  ${appName}:\n    repo: ${bareRepo}\n    install: node -e "require('fs').writeFileSync('installed.txt','ok')"\n    run: node -e "console.log('ran')"\n`;
   await writeFile(join(projectRoot, "apps.yaml"), yaml, "utf8");
 
