@@ -6,6 +6,14 @@
 
 If you've ever written a bash script to `git clone` three repos, `cd` into each, `npm install`, then open three terminal tabs to `npm run dev` — this replaces it.
 
+## When you want this
+
+You're actively developing across several packages at once — say a backend, a frontend, and a worker — each in its own repo, each with its own hot-reload. You edit code in one, see it reflected in another through an API call, then tweak the third. This is the daily loop.
+
+Doing this through containers is painful: file-watch across volume mounts is unreliable or slow, rebuilds invalidate caches, mounted `node_modules` fight with host `node_modules`, and attaching a debugger to a running container is a ritual. For the inner dev loop — where you're changing code every few seconds — you want processes running natively on your machine, reading from real checkouts you can edit, branch, and commit in like any other repo.
+
+`crew` is for exactly that case: multi-repo, natively-running, all dev servers alive at once, one command to bring them up, one `Ctrl+C` to bring them down.
+
 ## Why not docker-compose?
 
 Because you don't always want to containerize local dev. Sometimes you want:
