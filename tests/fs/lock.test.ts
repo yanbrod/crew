@@ -1,39 +1,41 @@
-import { describe, expect, it, beforeEach } from "vitest";
-import { vol } from "memfs";
+import { describe, expect, it, beforeEach, afterEach } from "vitest";
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { existsSync } from "node:fs";
 import { acquireLock, releaseLock, LockHeldError } from "../../src/fs/lock.js";
 
-const fs = vol.promises as unknown as typeof import("node:fs").promises;
-
 describe("lock", () => {
-  beforeEach(() => vol.reset());
+  let dir: string;
+  beforeEach(async () => { dir = await mkdtemp(join(tmpdir(), "lock-")); });
+  afterEach(async () => { await rm(dir, { recursive: true, force: true }); });
 
   it("acquires when no lockfile exists", async () => {
-    vol.fromJSON({ "/proj/apps/.keep": "" }, "/");
-    const h = await acquireLock("/proj/apps/.apps-cli.lock", { pid: 123, isAlive: () => false }, fs);
-    expect(h.path).toBe("/proj/apps/.apps-cli.lock");
-    expect((vol.readFileSync("/proj/apps/.apps-cli.lock", "utf8") as string).trim()).toBe("123");
+    const p = join(dir, ".apps-cli.lock");
+    const h = await acquireLock(p, { pid: 123, isAlive: () => false });
+    expect(h.path).toBe(p);
+    expect((await readFile(p, "utf8")).trim()).toBe("123");
   });
 
   it("throws LockHeldError when PID in file is alive", async () => {
-    vol.fromJSON({ "/proj/apps/.apps-cli.lock": "456\n" }, "/");
+    const p = join(dir, ".apps-cli.lock");
+    await writeFile(p, "456\n", "utf8");
     await expect(
-      acquireLock("/proj/apps/.apps-cli.lock", { pid: 123, isAlive: () => true }, fs),
+      acquireLock(p, { pid: 123, isAlive: () => true }),
     ).rejects.toBeInstanceOf(LockHeldError);
   });
 
   it("replaces stale lock when PID in file is not alive", async () => {
-    vol.fromJSON({ "/proj/apps/.apps-cli.lock": "999\n" }, "/");
-    const h = await acquireLock(
-      "/proj/apps/.apps-cli.lock",
-      { pid: 123, isAlive: () => false },
-      fs,
-    );
-    expect((vol.readFileSync(h.path, "utf8") as string).trim()).toBe("123");
+    const p = join(dir, ".apps-cli.lock");
+    await writeFile(p, "999\n", "utf8");
+    const h = await acquireLock(p, { pid: 123, isAlive: () => false });
+    expect((await readFile(h.path, "utf8")).trim()).toBe("123");
   });
 
   it("releaseLock removes the file", async () => {
-    vol.fromJSON({ "/proj/apps/.apps-cli.lock": "123\n" }, "/");
-    await releaseLock("/proj/apps/.apps-cli.lock", fs);
-    expect(vol.existsSync("/proj/apps/.apps-cli.lock")).toBe(false);
+    const p = join(dir, ".apps-cli.lock");
+    await writeFile(p, "123\n", "utf8");
+    await releaseLock(p);
+    expect(existsSync(p)).toBe(false);
   });
 });

@@ -13,7 +13,7 @@ import { upCommand } from "./commands/up.js";
 import { statusCommand, printStatus } from "./commands/status.js";
 import { AppsCliError, ConfigError, GitError } from "./errors.js";
 import { findProjectRoot, appsDirFor } from "./fs/paths.js";
-import { acquireLock, releaseLock, LockHeldError } from "./fs/lock.js";
+import { acquireLock, releaseLock } from "./fs/lock.js";
 
 function parseOnly(value: string | undefined): string[] | undefined {
   if (!value) return undefined;
@@ -24,8 +24,6 @@ function fail(err: unknown): never {
   if (err instanceof AppsCliError) {
     process.stderr.write(chalk.red(`${err.code}: ${err.message}\n`));
     if (err.hint) process.stderr.write(chalk.dim(`hint: ${err.hint}\n`));
-  } else if (err instanceof LockHeldError) {
-    process.stderr.write(chalk.red(`LockHeldError: ${err.message}\n`));
   } else {
     process.stderr.write(chalk.red(`error: ${(err as Error)?.message ?? err}\n`));
   }

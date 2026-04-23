@@ -1,10 +1,12 @@
 import { promises as realFs } from "node:fs";
+import { AppsCliError } from "../errors.js";
 import type { FsApi } from "./gitignore.js";
 
-export class LockHeldError extends Error {
-  constructor(readonly pid: number) {
-    super(`another apps-cli is running (pid ${pid})`);
-    this.name = "LockHeldError";
+export class LockHeldError extends AppsCliError {
+  readonly pid: number;
+  constructor(pid: number) {
+    super("RuntimeError", `another apps-cli is running (pid ${pid})`, { hint: "wait for it to finish or delete the lockfile if stale" });
+    this.pid = pid;
   }
 }
 
@@ -31,17 +33,40 @@ export async function acquireLock(
   deps: LockDeps = { pid: process.pid, isAlive: liveCheck },
   fs: FsApi = realFs,
 ): Promise<LockHandle> {
+  const tryCreate = async () => {
+    const fh = await (realFs as any).open(path, "wx");
+    try {
+      await fh.writeFile(`${deps.pid}\n`);
+    } finally {
+      await fh.close();
+    }
+  };
+
+  try {
+    await tryCreate();
+    return { path };
+  } catch (err: any) {
+    if (err?.code !== "EEXIST") throw err;
+  }
+
+  // Lockfile exists — check the holder
+  let holderPid = 0;
   try {
     const existing = await fs.readFile(path, "utf8");
-    const heldPid = Number.parseInt(existing.trim(), 10);
-    if (Number.isFinite(heldPid) && deps.isAlive(heldPid)) {
-      throw new LockHeldError(heldPid);
-    }
-  } catch (err: any) {
-    if (err instanceof LockHeldError) throw err;
-    if (err?.code !== "ENOENT") throw err;
+    holderPid = Number.parseInt(existing.trim(), 10);
+  } catch {
+    // race: lock disappeared between our EEXIST and readFile. Try once more.
+    await tryCreate();
+    return { path };
   }
-  await fs.writeFile(path, `${deps.pid}\n`, "utf8");
+
+  if (Number.isFinite(holderPid) && deps.isAlive(holderPid)) {
+    throw new LockHeldError(holderPid);
+  }
+
+  // Stale — remove and retry once
+  await fs.unlink(path);
+  await tryCreate();
   return { path };
 }
 
