@@ -1,5 +1,5 @@
 {
-  "name": "@yanbrod/crew",
+  "name": "@ianbrode/crew",
   "version": "0.1.0",
   "publishConfig": { "access": "public" },
   "description": "Declarative runner for multi-repo local dev environments — compose without containers",

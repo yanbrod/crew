@@ -28,7 +28,7 @@ Because you don't always want to containerize local dev. Sometimes you want:
 ## Install
 
 ```bash
-npm install -D @yanbrod/crew
+npm install -D @ianbrode/crew
 ```
 
 The binary is `crew` — use `npx crew <command>` after install.
