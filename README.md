@@ -1,6 +1,14 @@
 # crew
 
+[![npm](https://img.shields.io/npm/v/@ianbrode/crew.svg)](https://www.npmjs.com/package/@ianbrode/crew)
+[![license](https://img.shields.io/npm/l/@ianbrode/crew.svg)](./LICENSE)
+[![node](https://img.shields.io/node/v/@ianbrode/crew.svg)](https://nodejs.org)
+
 > Run your whole polyrepo dev environment with one command. **Compose without containers.**
+
+- 📦 npm: [`@ianbrode/crew`](https://www.npmjs.com/package/@ianbrode/crew) — install with `npm install -D @ianbrode/crew`
+- 🔨 source: [github.com/yanbrod/crew](https://github.com/yanbrod/crew)
+- 🛠 binary: `crew` (call via `npx crew <cmd>` or an npm script)
 
 `crew` is a Node.js CLI that reads a `crew.yaml` at your project root, clones the listed git repositories into a local `apps/` folder, installs their dependencies, and runs them all in parallel with merged, prefixed logs. One file, one command, all your services up.
 
@@ -31,7 +39,7 @@ Because you don't always want to containerize local dev. Sometimes you want:
 npm install -D @ianbrode/crew
 ```
 
-The binary is `crew` — use `npx crew <command>` after install.
+Package is published under the scope `@ianbrode` on npm. The CLI binary is plain `crew` — invoke as `npx crew <command>` or add it to an npm script.
 
 Requires Node 18+ and `git` in your `PATH`.
 
@@ -156,6 +164,8 @@ npm test            # vitest, 48 tests
 npm run typecheck   # strict TypeScript
 npm run build       # bundles to dist/cli.js
 ```
+
+> The source repo is `yanbrod/crew` (my GitHub handle); the npm package is `@ianbrode/crew` (my npm handle). Same project, two different account names across the two services.
 
 The `docs/superpowers/specs/` and `docs/superpowers/plans/` folders contain the original design spec and implementation plan (historical — they reference the old working name `apps-cli`).
 
