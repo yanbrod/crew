@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { PassThrough } from "node:stream";
-import { createPrefixedTee } from "../src/log.js";
+import { createPrefixedTee, colorFor } from "../src/log.js";
 
 describe("createPrefixedTee", () => {
   it("prefixes complete lines with [name] and writes them to out", async () => {
@@ -50,5 +50,13 @@ describe("createPrefixedTee", () => {
     src.end();
     await new Promise((r) => tee.once("finish", r));
     expect(out.join("")).toBe("[x] no newline\n");
+  });
+});
+
+describe("colorFor", () => {
+  it("handles negative indices without crashing", () => {
+    const fn = colorFor(-1);
+    expect(typeof fn).toBe("function");
+    expect(fn("x")).toContain("x");
   });
 });

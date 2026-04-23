@@ -39,6 +39,6 @@ export function createPrefixedTee(opts: TeeOptions): Writable {
 const palette = [chalk.cyan, chalk.magenta, chalk.yellow, chalk.green, chalk.blue, chalk.red];
 
 export function colorFor(index: number): (text: string) => string {
-  const fn = palette[index % palette.length];
-  return fn!;
+  const safe = ((index % palette.length) + palette.length) % palette.length;
+  return palette[safe]!;
 }
