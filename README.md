@@ -28,8 +28,10 @@ Because you don't always want to containerize local dev. Sometimes you want:
 ## Install
 
 ```bash
-npm install -D crew
+npm install -D @yanbrod/crew
 ```
+
+The binary is `crew` — use `npx crew <command>` after install.
 
 Requires Node 18+ and `git` in your `PATH`.
 

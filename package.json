@@ -1,6 +1,7 @@
 {
-  "name": "crew",
+  "name": "@yanbrod/crew",
   "version": "0.1.0",
+  "publishConfig": { "access": "public" },
   "description": "Declarative runner for multi-repo local dev environments — compose without containers",
   "keywords": [
     "cli",
