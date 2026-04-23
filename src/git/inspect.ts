@@ -30,12 +30,8 @@ export async function inspect(dir: string, exec: ExecFn = defaultExec): Promise<
   const currentBranch = branchRes.stdout.trim();
 
   let upstream: string | null = null;
-  try {
-    const up = await git(["rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{u}"], dir, exec);
-    if (up.exitCode === 0 && up.stdout.trim().length > 0) upstream = up.stdout.trim();
-  } catch {
-    upstream = null;
-  }
+  const up = await git(["rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{u}"], dir, exec);
+  if (up.exitCode === 0 && up.stdout.trim().length > 0) upstream = up.stdout.trim();
 
   const status = await git(["status", "--porcelain"], dir, exec);
   const isDirty = status.stdout.trim().length > 0;

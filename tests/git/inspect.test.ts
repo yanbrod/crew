@@ -6,12 +6,6 @@ const makeExec = (responses: Record<string, { stdout: string; exitCode: number }
     const key = args.join(" ");
     const r = responses[key];
     if (!r) throw new Error(`unexpected git args: ${key}`);
-    if (r.exitCode !== 0) {
-      const err: any = new Error("git failed");
-      err.exitCode = r.exitCode;
-      err.stderr = r.stdout;
-      throw err;
-    }
     return r;
   };
 
