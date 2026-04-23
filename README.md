@@ -144,10 +144,10 @@ If your services already share a monorepo, use `turbo` or `nx`. If you need cont
 
 ## Contributing
 
-Issues and PRs welcome at <https://github.com/your-org/crew> (once published).
+Issues and PRs welcome at <https://github.com/yanbrod/crew>.
 
 ```bash
-git clone https://github.com/your-org/crew
+git clone https://github.com/yanbrod/crew
 cd crew
 npm install
 npm test            # vitest, 48 tests

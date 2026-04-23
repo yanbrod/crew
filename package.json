@@ -1,10 +1,29 @@
 {
   "name": "crew",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Declarative runner for multi-repo local dev environments — compose without containers",
+  "keywords": [
+    "cli",
+    "multirepo",
+    "polyrepo",
+    "dev",
+    "devtool",
+    "orchestrator",
+    "runner",
+    "compose",
+    "monorepo-alternative"
+  ],
+  "homepage": "https://github.com/yanbrod/crew#readme",
+  "bugs": "https://github.com/yanbrod/crew/issues",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yanbrod/crew.git"
+  },
+  "license": "MIT",
+  "author": "Ian Brode <ianbrode@gmail.com>",
   "type": "module",
   "bin": { "crew": "dist/cli.js" },
-  "files": ["dist", "README.md"],
+  "files": ["dist", "README.md", "LICENSE"],
   "engines": { "node": ">=18" },
   "scripts": {
     "build": "tsup",
