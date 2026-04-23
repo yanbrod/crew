@@ -20,7 +20,7 @@
     "url": "git+https://github.com/yanbrod/crew.git"
   },
   "license": "MIT",
-  "author": "Ian Brode <ianbrode@gmail.com>",
+  "author": "Ian Brodetskii <ianbrode@gmail.com>",
   "type": "module",
   "bin": { "crew": "dist/cli.js" },
   "files": ["dist", "README.md", "LICENSE"],
