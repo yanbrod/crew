@@ -1,5 +1,6 @@
 import { describe, expect, it, beforeEach } from "vitest";
 import { vol } from "memfs";
+import { join } from "node:path";
 import {
   markerPath,
   readMarker,
@@ -18,7 +19,7 @@ describe("installMarker", () => {
   });
 
   it("markerPath is at <appDir>/.crew-installed", () => {
-    expect(markerPath("/proj/apps/api")).toBe("/proj/apps/api/.crew-installed");
+    expect(markerPath("/proj/apps/api")).toBe(join("/proj/apps/api", ".crew-installed"));
   });
 
   it("readMarker returns null if marker missing", async () => {

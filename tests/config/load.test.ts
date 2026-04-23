@@ -1,5 +1,6 @@
 import { describe, expect, it, beforeEach } from "vitest";
 import { vol } from "memfs";
+import { resolve } from "node:path";
 import { loadConfig } from "../../src/config/load.js";
 import { ConfigError } from "../../src/errors.js";
 
@@ -14,7 +15,7 @@ describe("loadConfig", () => {
         "apps:\n  api:\n    repo: x\n    install: y\n    run: z\n",
     }, "/");
     const res = await loadConfig("/proj/sub", fs);
-    expect(res.projectRoot).toBe("/proj");
+    expect(res.projectRoot).toBe(resolve("/proj"));
     expect(res.config.apps.api?.run).toBe("z");
   });
 

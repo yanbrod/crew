@@ -1,5 +1,6 @@
 import { describe, expect, it, beforeEach } from "vitest";
 import { vol } from "memfs";
+import { resolve, join } from "node:path";
 import { findProjectRoot, appsDirFor } from "../../src/fs/paths.js";
 
 const fs = vol.promises as unknown as typeof import("node:fs").promises;
@@ -13,7 +14,7 @@ describe("paths", () => {
       "/",
     );
     const root = await findProjectRoot("/proj/sub/deep", fs);
-    expect(root).toBe("/proj");
+    expect(root).toBe(resolve("/proj"));
   });
 
   it("returns null when crew.yaml is not anywhere above cwd", async () => {
@@ -23,10 +24,10 @@ describe("paths", () => {
   });
 
   it("appsDirFor returns <root>/apps by default", () => {
-    expect(appsDirFor("/proj", undefined)).toBe("/proj/apps");
+    expect(appsDirFor("/proj", undefined)).toBe(join("/proj", "apps"));
   });
 
   it("appsDirFor honors a custom appsDir config value", () => {
-    expect(appsDirFor("/proj", "workspaces")).toBe("/proj/workspaces");
+    expect(appsDirFor("/proj", "workspaces")).toBe(join("/proj", "workspaces"));
   });
 });
