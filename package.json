@@ -1,0 +1,31 @@
+{
+  "name": "apps-cli",
+  "version": "0.0.0",
+  "description": "Declarative runner for multi-repo local dev environments",
+  "type": "module",
+  "bin": { "apps-cli": "dist/cli.js" },
+  "files": ["dist", "README.md"],
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "commander": "^12.1.0",
+    "execa": "^9.4.0",
+    "js-yaml": "^4.1.0",
+    "tree-kill": "^1.2.2",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^20.14.0",
+    "memfs": "^4.9.3",
+    "tsup": "^8.3.0",
+    "typescript": "^5.5.0",
+    "vitest": "^2.1.0"
+  }
+}
