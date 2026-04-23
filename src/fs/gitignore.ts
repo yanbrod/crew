@@ -1,6 +1,6 @@
 import { promises as realFs } from "node:fs";
 
-export type FsApi = Pick<typeof realFs, "readFile" | "writeFile">;
+export type FsApi = Pick<typeof realFs, "readFile" | "writeFile" | "unlink">;
 
 export async function ensureGitignoreEntry(
   path: string,
