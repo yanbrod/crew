@@ -1,26 +1,45 @@
-# apps-cli
+# crew
 
-Declarative runner for multi-repo local dev environments. Install as a devDependency, describe your repos in `apps.yaml`, and run them all with one command.
+> Run your whole polyrepo dev environment with one command. **Compose without containers.**
+
+`crew` is a Node.js CLI that reads a `crew.yaml` at your project root, clones the listed git repositories into a local `apps/` folder, installs their dependencies, and runs them all in parallel with merged, prefixed logs. One file, one command, all your services up.
+
+If you've ever written a bash script to `git clone` three repos, `cd` into each, `npm install`, then open three terminal tabs to `npm run dev` — this replaces it.
+
+## Why not docker-compose?
+
+Because you don't always want to containerize local dev. Sometimes you want:
+
+- **Native speed** — no volume mounts, no file-watch weirdness, no Rosetta translation on Apple Silicon.
+- **Real debuggers** — attach VS Code or your IDE directly to the Node/Python/whatever process, no remote-debug gymnastics.
+- **Your actual repos** — work happens in `apps/my-service/` as a normal checkout you can branch, commit, and push from.
+- **Heterogeneous stacks** — one repo is Node, another is Poetry, another is a Rust binary. Each gets its own `install` and `run` command; `crew` doesn't care.
+
+`docker-compose` is great for production-shaped local environments. `crew` is for the daily dev loop.
 
 ## Install
 
 ```bash
-npm install -D apps-cli
+npm install -D crew
 ```
+
+Requires Node 18+ and `git` in your `PATH`.
 
 ## Quick start
 
 ```bash
-npx apps-cli init     # creates apps.yaml and ensures apps/ is gitignored
-# edit apps.yaml to list your repos
-npx apps-cli up       # clones, installs, starts everything
+npx crew init     # creates crew.yaml and adds apps/ to .gitignore
+# edit crew.yaml to list your repos
+npx crew up       # clone → install → start everything
 ```
 
-## Config
+Hit `Ctrl+C` to stop all apps at once.
+
+## crew.yaml
 
 ```yaml
-# apps.yaml
-appsDir: apps           # optional, default "apps"
+# crew.yaml
+appsDir: apps         # optional, default "apps"
 
 apps:
   api:
@@ -42,48 +61,94 @@ apps:
     cwd: ./src
 ```
 
-Fields per app:
+### Fields
 
 | Field | Required | Meaning |
 |---|---|---|
 | `repo` | yes | Git URL (ssh or https) |
 | `install` | yes | Shell command to install dependencies |
 | `run` | yes | Shell command to start the app |
-| `env` | no | Extra env vars for both install and run |
-| `cwd` | no | Relative path inside the cloned repo |
+| `env` | no | Extra environment variables for `install` and `run` |
+| `cwd` | no | Relative path inside the cloned repo to `cd` into before running commands |
 
-App names must match `^[a-zA-Z0-9_-]+$`.
+App names must match `^[a-zA-Z0-9_-]+$` (they become folder names and log prefixes).
 
 ## Commands
 
-- `apps-cli init` — create `apps.yaml` skeleton and add `apps/` to `.gitignore`.
-- `apps-cli sync` — clone missing repos, `git fetch` + fast-forward the current branch when safe, install dependencies when the install command changes.
-- `apps-cli start` — run all apps in parallel with prefixed logs. Ctrl+C stops them all.
-- `apps-cli up` — `sync` then `start`.
-- `apps-cli status` — inspect what's cloned, current branch, ahead/behind, dirty state.
+| Command | What it does |
+|---|---|
+| `crew init` | Create `crew.yaml` skeleton and ensure `apps/` is in `.gitignore` |
+| `crew sync` | Clone missing repos, safely pull current branch where possible, re-install when the `install` command changes |
+| `crew start` | Run every `run` command in parallel with `[name]` log prefixes; `Ctrl+C` kills them all |
+| `crew up` | `sync` then `start` — the primary workflow |
+| `crew status` | Read-only: what's cloned, current branch, dirty state, ahead/behind, install-marker freshness |
 
-Flags: `--only <a,b>` to operate on a subset; `--force` on `sync`/`up` to bypass the install marker.
+### Flags
+
+- `--only <a,b>` — operate on a subset of apps (`sync`, `start`, `up`)
+- `--force` — rerun `install` even if the marker says it's up to date (`sync`, `up`)
+- `--config <path>` — explicit path to a `crew.yaml` instead of auto-discovering by walking up from the cwd
 
 ## How updates work
 
-`sync` runs `git fetch` on every existing repo. It only moves your branch if:
+`crew sync` is deliberately careful about your local work. On every repo already cloned:
 
-1. The current branch has an upstream.
-2. The working tree is clean.
-3. The update is a fast-forward.
+1. Runs `git fetch`. Always.
+2. If the current branch has an upstream **and** the working tree is clean **and** a fast-forward is possible → `git merge --ff-only`.
+3. Otherwise → prints a skip notice and leaves the working tree untouched.
 
-Otherwise it prints a skip notice and leaves your work alone. `apps-cli` never runs `reset --hard`, `stash`, or anything that touches uncommitted work.
+`crew` will **never** run `git reset --hard`, `git stash`, `git checkout --`, or anything else that could lose uncommitted work. If `sync` says "skipped: working tree dirty" — your changes are still there. If you're on a feature branch, your branch stays put; only the remote refs get refreshed.
 
 ## Auth
 
-`apps-cli` does not manage credentials. For private repos, authenticate git the way you normally do (SSH key, credential helper, `gh auth`). Interactive prompts from git flow straight through to your terminal.
+`crew` does not manage credentials. For private repos, authenticate git the normal way (SSH key in agent, credential helper, `gh auth login`). Interactive prompts from git — passphrase, SSH host key confirmation, credential manager — flow straight through to your terminal.
 
 ## Platform notes
 
-- Works on macOS and Windows, Node 18+.
-- On Windows, `Ctrl+C` kills the process tree via `taskkill /T /F` (through `tree-kill`). If an app spawns grandchildren that don't propagate SIGTERM, they are still killed.
-- Shell commands in `install`/`run` use `/bin/sh` on Unix and `cmd.exe` on Windows. Stick to syntax both understand, or use a wrapper script in the repo.
+- **macOS, Linux, Windows.** Tested on Node 18 and 20 across all three in CI.
+- **Ctrl+C** tears down the whole process tree via `tree-kill` — `SIGTERM` + `taskkill /T /F` on Windows. Apps that spawn grandchildren (webpack, tsc --watch, python -m …) still die cleanly.
+- **Shell**: commands in `install` / `run` go through `sh -c` on Unix, `cmd.exe /c` on Windows. Stick to syntax both understand, or put a wrapper script inside the repo (`run: ./scripts/dev.sh`).
+
+## How it's different
+
+| | docker-compose | foreman / overmind | turborepo / nx | **crew** |
+|---|---|---|---|---|
+| Multiple repos | ✗ (one tree) | ✗ | ✗ | ✓ |
+| Containers | ✓ | ✗ | ✗ | ✗ |
+| Heterogeneous langs | ✓ | ✓ | partial | ✓ |
+| Cross-platform | ✓ | macOS/Linux | ✓ | ✓ |
+| Native speed | ✗ | ✓ | ✓ | ✓ |
+| Safe `git pull` | ✗ | ✗ | ✗ | ✓ |
+
+If your services already share a monorepo, use `turbo` or `nx`. If you need container parity with prod locally, use `docker-compose`. If your services live in separate repos and you want a one-command local stack without containers, use `crew`.
+
+## FAQ
+
+**Can I use this in CI?** Not the intended use. `crew` is a dev-loop tool: interactive signals, pretty terminal output, long-running processes. CI wants reproducible single-shot scripts.
+
+**What if two apps need to start in order?** Right now, no. All apps start in parallel. Apps that need a backend to be up should either retry, or you start them in two `crew up --only <names>` calls. Dependency ordering may come later if there's demand — open an issue.
+
+**Can I add a repo that's already cloned outside `apps/`?** Not directly. `crew` clones into `apps/<name>/`. If you already have the repo somewhere, either symlink `apps/my-app` → your existing checkout (at your own risk with `sync`), or just `cp -r` it in.
+
+**What about secrets / `.env` files?** Put them in the repos themselves. `crew.yaml`'s `env` field is for inline overrides (like `PORT=3001`); for anything sensitive, rely on each repo's own dotenv loading.
+
+**Why is `Ctrl+C` so aggressive?** Because dev servers that ignore SIGTERM are common (looking at you, webpack). `crew` sends SIGTERM, waits 5 seconds, then sends SIGKILL. Adjust by running your app in a wrapper if you need graceful shutdown.
+
+## Contributing
+
+Issues and PRs welcome at <https://github.com/your-org/crew> (once published).
+
+```bash
+git clone https://github.com/your-org/crew
+cd crew
+npm install
+npm test            # vitest, 48 tests
+npm run typecheck   # strict TypeScript
+npm run build       # bundles to dist/cli.js
+```
+
+The `docs/superpowers/specs/` and `docs/superpowers/plans/` folders contain the original design spec and implementation plan (historical — they reference the old working name `apps-cli`).
 
 ## License
 
-MIT (pending confirmation).
+MIT.
