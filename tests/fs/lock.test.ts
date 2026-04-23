@@ -11,14 +11,14 @@ describe("lock", () => {
   afterEach(async () => { await rm(dir, { recursive: true, force: true }); });
 
   it("acquires when no lockfile exists", async () => {
-    const p = join(dir, ".apps-cli.lock");
+    const p = join(dir, ".crew.lock");
     const h = await acquireLock(p, { pid: 123, isAlive: () => false });
     expect(h.path).toBe(p);
     expect((await readFile(p, "utf8")).trim()).toBe("123");
   });
 
   it("throws LockHeldError when PID in file is alive", async () => {
-    const p = join(dir, ".apps-cli.lock");
+    const p = join(dir, ".crew.lock");
     await writeFile(p, "456\n", "utf8");
     await expect(
       acquireLock(p, { pid: 123, isAlive: () => true }),
@@ -26,14 +26,14 @@ describe("lock", () => {
   });
 
   it("replaces stale lock when PID in file is not alive", async () => {
-    const p = join(dir, ".apps-cli.lock");
+    const p = join(dir, ".crew.lock");
     await writeFile(p, "999\n", "utf8");
     const h = await acquireLock(p, { pid: 123, isAlive: () => false });
     expect((await readFile(h.path, "utf8")).trim()).toBe("123");
   });
 
   it("releaseLock removes the file", async () => {
-    const p = join(dir, ".apps-cli.lock");
+    const p = join(dir, ".crew.lock");
     await writeFile(p, "123\n", "utf8");
     await releaseLock(p);
     expect(existsSync(p)).toBe(false);

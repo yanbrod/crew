@@ -51,7 +51,7 @@ async function loadFromExplicitPath(configPath: string): Promise<LoadedConfig> {
   if (!result.success) {
     const issues = result.error.issues
       .map((i) => `${i.path.join(".")}: ${i.message}`).join("; ");
-    throw new ConfigError(`apps.yaml invalid — ${issues}`);
+    throw new ConfigError(`crew.yaml invalid — ${issues}`);
   }
   return { projectRoot: dirname(configPath), config: result.data };
 }
@@ -67,7 +67,7 @@ async function withLockAndRun<T>(
   fn: () => Promise<T>,
 ): Promise<T> {
   await mkdir(appsDirPath, { recursive: true });
-  const lockPath = join(appsDirPath, ".apps-cli.lock");
+  const lockPath = join(appsDirPath, ".crew.lock");
   const lock = await acquireLock(lockPath);
   try {
     return await fn();
@@ -78,19 +78,19 @@ async function withLockAndRun<T>(
 
 async function main() {
   const program = new Command()
-    .name("apps-cli")
-    .description("Declarative multi-repo dev environment runner")
+    .name("crew")
+    .description("Declarative runner for multi-repo local dev environments — compose without containers")
     .version(pkg.version)
-    .option("--config <path>", "explicit path to apps.yaml");
+    .option("--config <path>", "explicit path to crew.yaml");
 
   program
     .command("init")
-    .description("create apps.yaml and ensure apps/ is gitignored")
+    .description("create crew.yaml and ensure apps/ is gitignored")
     .action(async () => {
       try {
         const root = (await findProjectRoot(process.cwd())) ?? process.cwd();
         const r = await initCommand(root);
-        process.stdout.write(r.created ? "apps.yaml created\n" : "apps.yaml already exists\n");
+        process.stdout.write(r.created ? "crew.yaml created\n" : "crew.yaml already exists\n");
       } catch (err) { fail(err); }
     });
 

@@ -10,7 +10,7 @@ export interface Fixture {
 }
 
 export async function makeFixture(appName = "demo"): Promise<Fixture> {
-  const tmp = await mkdtemp(join(tmpdir(), "apps-cli-"));
+  const tmp = await mkdtemp(join(tmpdir(), "crew-"));
   const bareRepo = join(tmp, `${appName}.git`);
   const seed = join(tmp, `${appName}-seed`);
   const projectRoot = join(tmp, "project");
@@ -26,7 +26,7 @@ export async function makeFixture(appName = "demo"): Promise<Fixture> {
 
   await mkdir(projectRoot, { recursive: true });
   const yaml = `apps:\n  ${appName}:\n    repo: ${bareRepo}\n    install: node -e "require('fs').writeFileSync('installed.txt','ok')"\n    run: node -e "console.log('ran')"\n`;
-  await writeFile(join(projectRoot, "apps.yaml"), yaml, "utf8");
+  await writeFile(join(projectRoot, "crew.yaml"), yaml, "utf8");
 
   return { tmp, bareRepo, projectRoot };
 }

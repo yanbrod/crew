@@ -40,7 +40,7 @@ export async function startCommand(
       await fs.readFile(join(appDir, ".git", "HEAD"), "utf8");
     } catch {
       throw new RuntimeError(`${name} not synced`, {
-        hint: "run `apps-cli sync` first",
+        hint: "run `crew sync` first",
       });
     }
   }

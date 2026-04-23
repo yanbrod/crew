@@ -3,7 +3,7 @@ import { createHash } from "node:crypto";
 import { join } from "node:path";
 import type { FsApi } from "./gitignore.js";
 
-const MARKER = ".apps-cli-installed";
+const MARKER = ".crew-installed";
 
 export function markerPath(appDir: string): string {
   return join(appDir, MARKER);

@@ -1,9 +1,9 @@
 {
-  "name": "apps-cli",
+  "name": "crew",
   "version": "0.0.0",
-  "description": "Declarative runner for multi-repo local dev environments",
+  "description": "Declarative runner for multi-repo local dev environments — compose without containers",
   "type": "module",
-  "bin": { "apps-cli": "dist/cli.js" },
+  "bin": { "crew": "dist/cli.js" },
   "files": ["dist", "README.md"],
   "engines": { "node": ">=18" },
   "scripts": {

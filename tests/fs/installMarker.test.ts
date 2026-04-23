@@ -17,8 +17,8 @@ describe("installMarker", () => {
     expect(hashInstall("pnpm install")).not.toBe(hashInstall("npm ci"));
   });
 
-  it("markerPath is at <appDir>/.apps-cli-installed", () => {
-    expect(markerPath("/proj/apps/api")).toBe("/proj/apps/api/.apps-cli-installed");
+  it("markerPath is at <appDir>/.crew-installed", () => {
+    expect(markerPath("/proj/apps/api")).toBe("/proj/apps/api/.crew-installed");
   });
 
   it("readMarker returns null if marker missing", async () => {

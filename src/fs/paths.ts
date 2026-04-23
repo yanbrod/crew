@@ -2,7 +2,7 @@ import { promises as realFs } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import type { FsApi } from "./gitignore.js";
 
-const CONFIG_NAME = "apps.yaml";
+const CONFIG_NAME = "crew.yaml";
 
 export async function findProjectRoot(
   startDir: string,

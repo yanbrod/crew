@@ -5,7 +5,7 @@ import type { FsApi } from "./gitignore.js";
 export class LockHeldError extends AppsCliError {
   readonly pid: number;
   constructor(pid: number) {
-    super("RuntimeError", `another apps-cli is running (pid ${pid})`, { hint: "wait for it to finish or delete the lockfile if stale" });
+    super("RuntimeError", `another crew is running (pid ${pid})`, { hint: "wait for it to finish or delete the lockfile if stale" });
     this.pid = pid;
   }
 }

@@ -20,7 +20,7 @@ describe("integration: sync", () => {
     expect(existsSync(join(f.projectRoot, "apps", "demo", "installed.txt"))).toBe(true);
 
     const marker = await readFile(
-      join(f.projectRoot, "apps", "demo", ".apps-cli-installed"),
+      join(f.projectRoot, "apps", "demo", ".crew-installed"),
       "utf8",
     );
     expect(marker.trim().length).toBeGreaterThan(0);

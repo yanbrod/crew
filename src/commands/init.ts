@@ -3,7 +3,7 @@ import { join } from "node:path";
 import type { FsApi } from "../fs/gitignore.js";
 import { ensureGitignoreEntry } from "../fs/gitignore.js";
 
-const SKELETON = `# apps.yaml — managed by apps-cli
+const SKELETON = `# crew.yaml — managed by crew
 # appsDir: apps
 apps:
   # example:
@@ -17,7 +17,7 @@ export interface InitResult {
 }
 
 export async function initCommand(projectRoot: string, fs: FsApi = realFs): Promise<InitResult> {
-  const configPath = join(projectRoot, "apps.yaml");
+  const configPath = join(projectRoot, "crew.yaml");
   let exists = false;
   try {
     await fs.readFile(configPath, "utf8");
