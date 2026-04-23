@@ -124,7 +124,6 @@ This keeps unit tests fast and hermetic, and leaves one clear integration test s
   "devDependencies": {
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^20.14.0",
-    "@types/tree-kill": "^1.2.5",
     "memfs": "^4.9.3",
     "tsup": "^8.3.0",
     "typescript": "^5.5.0",
