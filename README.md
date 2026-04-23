@@ -1,8 +1,8 @@
 # crew
 
-[![npm](https://img.shields.io/npm/v/@ianbrode/crew.svg)](https://www.npmjs.com/package/@ianbrode/crew)
-[![license](https://img.shields.io/npm/l/@ianbrode/crew.svg)](./LICENSE)
-[![node](https://img.shields.io/node/v/@ianbrode/crew.svg)](https://nodejs.org)
+[![npm](https://img.shields.io/npm/v/@ianbrode/crew?style=flat-square)](https://www.npmjs.com/package/@ianbrode/crew)
+[![license](https://img.shields.io/npm/l/@ianbrode/crew?style=flat-square)](./LICENSE)
+[![node](https://img.shields.io/node/v/@ianbrode/crew?style=flat-square)](https://nodejs.org)
 
 > Run your whole polyrepo dev environment with one command. **Compose without containers.**
 
