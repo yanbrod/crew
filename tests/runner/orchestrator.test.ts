@@ -24,7 +24,7 @@ function fakeChild(pid: number) {
 }
 
 describe("orchestrator", () => {
-  it("starts all children, prefixes their lines, and resolves when all exit 0", async () => {
+  it("any child exit triggers shutdown of siblings with exit 1", async () => {
     const a = fakeChild(10);
     const b = fakeChild(11);
     const spawnFn = vi.fn()
@@ -48,14 +48,14 @@ describe("orchestrator", () => {
 
     a.stdout.write("ready\n");
     b.stdout.write("listening\n");
-    a.exit(0);
-    b.exit(0);
-
+    a.exit(0);  // clean exit — but still triggers shutdown of siblings
+    await new Promise((r) => setTimeout(r, 5));
+    b.exit(143); // simulate the SIGTERM actually killing b
     const r = await donePromise;
-    expect(r.exitCode).toBe(0);
+    expect(r.exitCode).toBe(1);
     expect(out.join("")).toContain("[api] ready\n");
     expect(out.join("")).toContain("[web] listening\n");
-    expect(killFn).not.toHaveBeenCalled();
+    expect(killFn).toHaveBeenCalledWith(11, "SIGTERM");
   });
 
   it("kills all children when one exits non-zero and resolves with 1", async () => {

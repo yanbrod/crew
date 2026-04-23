@@ -81,11 +81,9 @@ export function runAllHandle(opts: OrchestratorOpts): OrchestratorHandle {
         const failed = (code ?? 0) !== 0;
         if (!shuttingDown) {
           out.write(`[${c.app.name}] exited with code ${code}\n`);
-          if (failed) {
-            firstFailure = true;
-            // Internal child-exit triggered shutdown — does NOT set externalSignal
-            shutdown("child-exit");
-          }
+          firstFailure = true; // exit 0 from a dev server is also "done unexpectedly"
+          // Internal child-exit triggered shutdown — does NOT set externalSignal
+          shutdown("child-exit");
         }
         tryFinish();
       });
