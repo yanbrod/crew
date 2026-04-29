@@ -12,6 +12,7 @@ import { initCommand } from "./commands/init.js";
 import { syncCommand } from "./commands/sync.js";
 import { startCommand } from "./commands/start.js";
 import { upCommand } from "./commands/up.js";
+import { resetCommand } from "./commands/reset.js";
 import { statusCommand, printStatus } from "./commands/status.js";
 import { AppsCliError, ConfigError, GitError } from "./errors.js";
 import { findProjectRoot, appsDirFor } from "./fs/paths.js";
@@ -148,6 +149,28 @@ async function main() {
           }),
         );
         process.exit(code);
+      } catch (err) { fail(err); }
+    });
+
+  program
+    .command("reset")
+    .description("DESTRUCTIVE: hard-reset each app to its upstream and clean untracked non-ignored files")
+    .option("--only <names>", "comma-separated app names")
+    .option("--yes", "skip the confirmation prompt (use in scripts)")
+    .action(async (cmdOpts) => {
+      const rootOpts = program.opts() as { config?: string };
+      try {
+        await gitPreflight();
+        const { projectRoot, config } = await getConfig(rootOpts);
+        const appsDir = appsDirFor(projectRoot, config.appsDir);
+        const r = await withLockAndRun(projectRoot, appsDir, () =>
+          resetCommand(projectRoot, config, {
+            only: parseOnly(cmdOpts.only),
+            yes: !!cmdOpts.yes,
+          }),
+        );
+        if (r.aborted || r.failed.length > 0) process.exit(1);
+        process.exit(0);
       } catch (err) { fail(err); }
     });
 

@@ -62,4 +62,41 @@ describe("ConfigSchema", () => {
     });
     expect(result.success).toBe(true);
   });
+
+  it("accepts optional clone.args", () => {
+    const result = ConfigSchema.safeParse({
+      apps: {
+        api: {
+          repo: "x",
+          install: "y",
+          run: "z",
+          clone: { args: ["--recurse-submodules", "--depth=1"] },
+        },
+      },
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects unknown fields under clone", () => {
+    const result = ConfigSchema.safeParse({
+      apps: {
+        api: {
+          repo: "x",
+          install: "y",
+          run: "z",
+          clone: { args: ["--depth=1"], strange: 1 },
+        },
+      },
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects empty strings inside clone.args", () => {
+    const result = ConfigSchema.safeParse({
+      apps: {
+        api: { repo: "x", install: "y", run: "z", clone: { args: [""] } },
+      },
+    });
+    expect(result.success).toBe(false);
+  });
 });

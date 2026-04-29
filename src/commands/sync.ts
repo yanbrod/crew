@@ -16,8 +16,13 @@ export interface SyncOptions {
   force?: boolean;
 }
 
+export interface SyncFailure {
+  name: string;
+  reason: string;
+}
+
 export interface SyncResult {
-  failed: string[];
+  failed: SyncFailure[];
 }
 
 export async function syncCommand(
@@ -32,7 +37,7 @@ export async function syncCommand(
   const entries = Object.entries(config.apps).filter(
     ([name]) => !opts.only || opts.only.includes(name),
   );
-  const failed: string[] = [];
+  const failed: SyncFailure[] = [];
 
   for (const [name, app] of entries) {
     const appDir = join(appsDir, name);
@@ -43,8 +48,10 @@ export async function syncCommand(
         await fs.readFile(join(appDir, ".git", "HEAD"), "utf8");
       } catch (err: any) {
         if (err?.code !== "ENOENT") throw err;
-        process.stdout.write(chalk.cyan(`[${name}] cloning ${app.repo}\n`));
-        await clone(app.repo, appDir);
+        const cloneArgs = app.clone?.args ?? [];
+        const argsLabel = cloneArgs.length > 0 ? ` (${cloneArgs.join(" ")})` : "";
+        process.stdout.write(chalk.cyan(`[${name}] cloning ${app.repo}${argsLabel}\n`));
+        await clone(app.repo, appDir, { args: cloneArgs });
         didClone = true;
       }
 
@@ -69,8 +76,9 @@ export async function syncCommand(
         process.stdout.write(chalk.dim(`[${name}] install marker up to date\n`));
       }
     } catch (err: any) {
-      process.stderr.write(chalk.red(`[${name}] ${err?.message ?? err}\n`));
-      failed.push(name);
+      const reason = String(err?.message ?? err);
+      process.stderr.write(chalk.red(`[${name}] ${reason}\n`));
+      failed.push({ name, reason });
     }
   }
 

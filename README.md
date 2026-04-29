@@ -73,6 +73,8 @@ apps:
     install: poetry install
     run: poetry run python -m worker
     cwd: ./src
+    clone:
+      args: ["--recurse-submodules", "--depth=1"]
 ```
 
 ### Fields
@@ -84,8 +86,9 @@ apps:
 | `run` | yes | Shell command to start the app |
 | `env` | no | Extra environment variables for `install` and `run` |
 | `cwd` | no | Relative path inside the cloned repo to `cd` into before running commands |
+| `clone.args` | no | Extra arguments passed verbatim to `git clone` (e.g. `--recurse-submodules`, `--depth=1`, `--branch develop`). Applied only on the initial clone. |
 
-App names must match `^[a-zA-Z0-9_-]+$` (they become folder names and log prefixes).
+App names from `crew.yaml` are used as folder names under `appsDir/` (so `apps/api`, `apps/web`, …) and as log prefixes. They must match `^[a-zA-Z0-9_-]+$`.
 
 ## Commands
 
@@ -94,13 +97,15 @@ App names must match `^[a-zA-Z0-9_-]+$` (they become folder names and log prefix
 | `crew init` | Create `crew.yaml` skeleton and ensure `apps/` is in `.gitignore` |
 | `crew sync` | Clone missing repos, safely pull current branch where possible, re-install when the `install` command changes |
 | `crew start` | Run every `run` command in parallel with `[name]` log prefixes; `Ctrl+C` kills them all |
-| `crew up` | `sync` then `start` — the primary workflow |
+| `crew up` | `sync` then `start` — the primary workflow. If `sync` fails for any app, prints a loud red banner naming each failure and its reason, and refuses to start any dev servers until you've fixed it |
 | `crew status` | Read-only: what's cloned, current branch, dirty state, ahead/behind, install-marker freshness |
+| `crew reset` | **DESTRUCTIVE.** Per app: `git fetch` → `git reset --hard @{upstream}` → `git clean -fd`. Drops local commits not on upstream, drops uncommitted changes, deletes untracked non-ignored files. **Files matched by `.gitignore` (e.g. `.env`, `node_modules`, `dist`) are preserved.** Prints a banner listing exactly what will happen and waits for `yes` on stdin; pass `--yes` to skip the prompt in scripts |
 
 ### Flags
 
-- `--only <a,b>` — operate on a subset of apps (`sync`, `start`, `up`)
+- `--only <a,b>` — operate on a subset of apps (`sync`, `start`, `up`, `reset`)
 - `--force` — rerun `install` even if the marker says it's up to date (`sync`, `up`)
+- `--yes` — skip the confirmation prompt for `crew reset`
 - `--config <path>` — explicit path to a `crew.yaml` instead of auto-discovering by walking up from the cwd
 
 ## How updates work
@@ -156,7 +161,7 @@ Issues and PRs welcome at <https://github.com/yanbrod/crew>.
 git clone https://github.com/yanbrod/crew
 cd crew
 npm install
-npm test            # vitest, 48 tests
+npm test            # vitest, 62 tests
 npm run typecheck   # strict TypeScript
 npm run build       # bundles to dist/cli.js
 ```
