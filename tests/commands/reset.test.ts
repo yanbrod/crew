@@ -46,10 +46,13 @@ const mkConfig = (apps: Record<string, { repo?: string }> = { ui1: {} }): Config
   ),
 }) as unknown as Config;
 
+const toFwd = (p: string): string => p.replace(/\\/g, "/");
+
 const mkFs = (clonedNames: string[]) =>
   ({
     readFile: vi.fn(async (path: string) => {
-      const cloned = clonedNames.some((n) => path.includes(`/${n}/.git/HEAD`));
+      const norm = toFwd(path);
+      const cloned = clonedNames.some((n) => norm.includes(`/${n}/.git/HEAD`));
       if (!cloned) {
         const e: any = new Error("ENOENT");
         e.code = "ENOENT";
@@ -157,7 +160,7 @@ describe("resetCommand", () => {
     const exec = vi.fn(async () => ({ stdout: "", exitCode: 0 }));
     const fetch = vi.fn(async () => ({ exitCode: 0 }));
     const inspectFn = vi.fn(async (dir: string) => {
-      if (dir.includes("/no-upstream")) return mkState({ upstream: null });
+      if (toFwd(dir).includes("/no-upstream")) return mkState({ upstream: null });
       return mkState();
     });
     const confirm = vi.fn(async () => true);
@@ -187,7 +190,7 @@ describe("resetCommand", () => {
   it("reports failures when fetch exits non-zero and continues with the next app", async () => {
     const exec = vi.fn(async () => ({ stdout: "", exitCode: 0 }));
     const fetch = vi.fn(async (dir: string) => {
-      if (dir.includes("/ui1")) return { exitCode: 128, stderr: "fatal: bad remote" };
+      if (toFwd(dir).includes("/ui1")) return { exitCode: 128, stderr: "fatal: bad remote" };
       return { exitCode: 0 };
     });
     const inspectFn = vi.fn(async () => mkState());
